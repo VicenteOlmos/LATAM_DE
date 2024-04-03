@@ -35,15 +35,26 @@ def q2_memory(file_path: str) -> List[Tuple[str, int]]:
             return data
 
     root = None
-    with open(file_path, "r") as file:
-        for line in file:
-            tweet = json.loads(line)
-            for char in tweet["content"]:
-                if char in emoji.UNICODE_EMOJI["en"]:
-                    if root is None:
-                        root = BSTNode(char)
-                    else:
-                        root.insert(char)
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                try:
+                    tweet = json.loads(line)
+                    for char in tweet["content"]:
+                        if char in emoji.UNICODE_EMOJI["en"]:
+                            if root is None:
+                                root = BSTNode(char)
+                            else:
+                                root.insert(char)
+                except json.JSONDecodeError:
+                    print("Error al decodificar JSON.")
+                    continue
+    except FileNotFoundError:
+        print(f"El archivo {file_path} no existe.")
+        return []
+    except Exception as e:
+        print(f"Error al leer el archivo: {e}")
+        return []    
 
     all_data = root.get_top_emojis() if root else []
     return sorted(all_data, key=lambda x: x[1], reverse=True)[:10]

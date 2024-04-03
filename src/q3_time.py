@@ -16,17 +16,29 @@ def q3_time(file_path: str) -> List[Tuple[str, int]]:
     c.execute("SELECT COUNT(*) FROM mentions")
     count = c.fetchone()[0]
     if count == 0:
-        with open(file_path, "r") as file:
-            for line in file:
-                tweet = json.loads(line)
-                tweet_text = tweet["content"]
-                mentions = re.findall(r"@(\w+)", tweet_text)
-                for mention in mentions:
-                    c.execute(
-                        "INSERT INTO mentions (user) VALUES (?)",
-                        (mention,),
-                    )
-        conn.commit()
+        try:
+            with open(file_path, "r") as file:
+                for line in file:
+                    try:
+                        tweet = json.loads(line)
+                        tweet_text = tweet["content"]
+                        mentions = re.findall(r"@(\w+)", tweet_text)
+                        for mention in mentions:
+                            c.execute(
+                                "INSERT INTO mentions (user) VALUES (?)",
+                                (mention,),
+                            )
+                    except json.JSONDecodeError:
+                        print("Error al decodificar JSON.")
+                        continue
+            conn.commit()
+        except FileNotFoundError:
+            print(f"El archivo {file_path} no existe.")
+            return []
+        except Exception as e:
+            print(f"Error al leer el archivo: {e}")
+            return []
+        
 
     query_most_mentioned = """ SELECT user,COUNT(*) as counter FROM mentions GROUP BY user ORDER BY counter DESC LIMIT 10"""
     c.execute(query_most_mentioned)

@@ -17,15 +17,26 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
     c.execute("SELECT COUNT(*) FROM tweets")
     count = c.fetchone()[0]
     if count == 0:
-        with open(file_path, "r") as file:
-            for line in file:
-                tweet = json.loads(line)
-                tweet_text = tweet["content"]
-                c.execute(
-                    "INSERT INTO tweets (content) VALUES (?)",
-                    (str(tweet_text),),
-                )
-        conn.commit()
+        try:
+            with open(file_path, "r") as file:
+                for line in file:
+                    try:
+                        tweet = json.loads(line)
+                        tweet_text = tweet["content"]
+                        c.execute(
+                            "INSERT INTO tweets (content) VALUES (?)",
+                            (str(tweet_text),),
+                        )
+                    except json.JSONDecodeError:
+                        print("Error al decodificar JSON.")
+                        continue
+            conn.commit()
+        except FileNotFoundError:
+            print(f"El archivo {file_path} no existe.")
+            return []
+        except Exception as e:
+            print(f"Error al leer el archivo: {e}")
+            return []
 
     query_top_emojis = """ SELECT content FROM tweets"""
     c.execute(query_top_emojis)
@@ -34,11 +45,11 @@ def q2_time(file_path: str) -> List[Tuple[str, int]]:
     for row in c.fetchall():
         tweet = row[0]
         for char in tweet:
-            if char in emoji.UNICODE_EMOJI["en"]:
+            if char in emoji.UNICODE_EMOJI['en']:
                 if char in emoji_counter:
                     emoji_counter[char] += 1
                 else:
                     emoji_counter[char] = 1
     conn.close()
-
+        
     return sorted(emoji_counter.items(), key=lambda x: x[1], reverse=True)[:10]

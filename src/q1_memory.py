@@ -44,15 +44,26 @@ def q1_memory(file_path: str) -> List[Tuple[datetime.date, str]]:
             return data
 
     root = None
-    with open(file_path, "r") as file:
-        for line in file:
-            tweet = json.loads(line)
-            date = datetime.fromisoformat(tweet["date"]).date()
-            user = tweet["user"]["username"]
-            if root is None:
-                root = BSTNode(date, user)
-            else:
-                root.insert(date, user)
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                try:
+                    tweet = json.loads(line)
+                    date = datetime.fromisoformat(tweet["date"]).date()
+                    user = tweet["user"]["username"]
+                    if root is None:
+                        root = BSTNode(date, user)
+                    else:
+                        root.insert(date, user)
+                except json.JSONDecodeError:
+                    print("Error al decodificar JSON.")
+                    continue
+    except FileNotFoundError:
+        print(f"El archivo {file_path} no existe.")
+        return []
+    except Exception as e:
+        print(f"Error al leer el archivo: {e}")
+        return []
 
     all_data = root.get_top_users() if root else []
     top_dates = sorted(all_data, key=lambda x: x[2], reverse=True)[:10]

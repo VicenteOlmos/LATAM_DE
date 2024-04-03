@@ -17,17 +17,28 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
     c.execute("SELECT COUNT(*) FROM tweets")
     count = c.fetchone()[0]
     if count == 0:
-        with open(file_path, "r") as file:
-            for line in file:
-                tweet = json.loads(line)
-                date = tweet["date"][:10]
-                user = tweet["user"]["username"]
-                tweet_text = tweet["content"]
-                c.execute(
-                    "INSERT INTO tweets (date, user, tweet) VALUES (?, ?, ?)",
-                    (date, user, tweet_text),
-                )
-        conn.commit()
+        try:
+            with open(file_path, "r") as file:
+                for line in file:
+                    try:
+                        tweet = json.loads(line)
+                        date = tweet["date"][:10]
+                        user = tweet["user"]["username"]
+                        tweet_text = tweet["content"]
+                        c.execute(
+                            "INSERT INTO tweets (date, user, tweet) VALUES (?, ?, ?)",
+                            (date, user, tweet_text),
+                        )
+                        conn.commit()
+                    except json.JSONDecodeError:
+                        print("Error al decodificar JSON.")
+                        continue
+        except FileNotFoundError:
+            print(f"El archivo {file_path} no existe.")
+            return []
+        except Exception as e:
+            print(f"Error al leer el archivo: {e}")
+            return []
 
     query_top_dates = """
     SELECT date
@@ -50,7 +61,7 @@ def q1_time(file_path: str) -> List[Tuple[datetime.date, str]]:
         LIMIT 1
         """
         c.execute(query_top_user)
-        top_user, _ = c.fetchone()
+        top_user,_ = c.fetchone()
         top_users_per_date.append(
             (datetime.strptime(date, "%Y-%m-%d").date(), top_user)
         )
