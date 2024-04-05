@@ -73,3 +73,12 @@ Returns:
 ## Sugerencias
 * Para medir la memoria en uso te recomendamos [memory-profiler](https://pypi.org/project/memory-profiler/) o [memray](https://github.com/bloomberg/memray)
 * Para medir el tiempo de ejecución te recomendamos [py-spy](https://github.com/benfred/py-spy) o [Python Profilers](https://docs.python.org/3/library/profile.html)
+
+
+
+## Descripcion
+Mi primera opción para resolver el challenge fue utilizar algún algoritmo de ordenamiento, a su vez utilice pandas para ver como se comportaba en los dos escenarios. En primer lugar, al aplicar pandas y compararlo con radix sort y posteriormente quick sort, me daba usos de memoria y tiempo muy elevados, asi que decidi usar un Arbol Binario de busqueda(BST) donde la parte que mas toma tiempo es la inserción, pero si se ocupan los nodos de forma óptima, las consultas posteriores son simples. Finalmente, utilicé una BBDD sqlite, ya que los algoritmos dieron tiempos mayores al BST, la cual, si no está creada, se demora mucho el proceso, pero una vez creada, el tiempo de las consultas es ínfimo si se hacen correctamente. Por lo tanto, en el caso cotidiano, creo que la mejor opción es tener una BBDD creada y hacer las consultas.
+
+Para ambas funciones se recomienda ejectuar el codigo multiples veces, para poder tomar en cuenta los tiempos en el caso cotidiano de ejecución.
+
+Como forma de modularizar el código, en un futuro se podría crear una clase de BST que acepte cualquier parámetro, por lo que se podría usar en prácticamente cualquier consulta que se quiera. Para la BBDD se podría usar Redis si es necesario tener los datos disponibles de una forma rápida constantemente.
